@@ -1,0 +1,17 @@
+@defaults {
+  vpc_id = '${aws_vpc.main.id}' // specify the VPC for each security group
+}
+virtsecgroup out_all {
+  out all cidr='0.0.0.0/0' // allow outbound to anywhere
+}
+secgroup vpn_server is out_all { // for IPsec-based VPN server instances
+  in udp 500,4500 cidr='0.0.0.0/0' // IKE ISAKMP and IPsec NAT-T
+  in icmp 8 cidr='1.2.3.4/32' // allow ping from monitoring server
+}
+secgroup my_server is out_all { // for backend service instances
+  in tcp 8080 my_elb,vpn_server // direct access only from ELB or VPN
+}
+secgroup my_elb { // for load balancer
+  in tcp 80,443 cidr='0.0.0.0/0' // HTTP/HTTPS from anywhere
+  out tcp 8080 my_server // outbound only to backend servers
+}

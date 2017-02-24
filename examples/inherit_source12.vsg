@@ -1,0 +1,15 @@
+virtsecgroup a
+
+secgroup b is a
+
+secgroup c {
+  // results in rule with source groups b and d
+  in tcp 123 a
+}
+
+secgroup d is a
+
+secgroup e {
+  // results in rule with source groups b and d
+  in tcp 234 a
+}

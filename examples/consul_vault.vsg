@@ -1,0 +1,46 @@
+@defaults {
+  vpc_id = '${aws_vpc.main.id}' // specify the VPC for each security group
+}
+
+virtsecgroup out_all {
+  out all cidr='0.0.0.0/0'
+}
+
+virtsecgroup consul_diag_src // source group for access to Consul diagnostic ports
+virtsecgroup vault_diag_src // source group for access to Vault diagnostic ports
+
+secgroup vpn_server is
+  consul_diag_src,
+  vault_diag_src,
+  out_all {
+  desc 'VPN Server'
+  in udp 500,4500 cidr='0.0.0.0/0' // IKE ISAKMP and IPsec NAT-T
+  in icmp 8 cidr='1.2.3.4/32' // allow ping from monitoring server
+}
+
+virtsecgroup consul_common { // base group for Consul server or client
+  out tcp 8300 consul_server // server RPC
+  inout tcp,udp 8301 consul_common // serf LAN
+  in tcp 8400 consul_diag_src // CLI RPC (localhost except diagnostics)
+  in tcp 8500 consul_diag_src // HTTP API (localhost except diagnostics)
+  in tcp,udp 8600 consul_diag_src // DNS (localhost except diagnostics)
+}
+
+virtsecgroup consul_server is consul_common {
+  in tcp 8300 consul_common // server RPC
+  inout tcp,udp 8302 consul_server // serf WAN
+}
+
+virtsecgroup consul_client is consul_common
+
+virtsecgroup vault_client // source group for Vault access
+
+virtsecgroup vault_server {
+  in tcp 8200 vault_client,vault_diag_src
+}
+
+secgroup consul_vault_server is
+  consul_server,
+  vault_server {
+  desc 'Combined Consul/Vault Servers'
+}

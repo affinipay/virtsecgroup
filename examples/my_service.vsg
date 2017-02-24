@@ -1,0 +1,21 @@
+@import 'consul_vault.vsg'
+
+@defaults {
+  vpc_id = '${aws_vpc.main.id}' // specify the VPC for each security group
+}
+
+secgroup my_server_client // externally defined security group
+
+secgroup my_server is
+  consul_client,
+  vault_client,
+  out_all {
+  desc 'My Servers that use Consul and Vault'
+  in tcp 8080 my_elb,vpn_server,my_server_client
+}
+
+secgroup my_elb {
+  desc 'Load Balancer for My Servers'
+  in tcp 80,443 cidr='0.0.0.0/0'
+  out tcp 8080 my_server
+}

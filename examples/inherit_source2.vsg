@@ -1,0 +1,9 @@
+@import 'inherit_source1.vsg'
+
+secgroup d is a
+
+secgroup e {
+  // results in rule with only source group d, since imported group b
+  // (which also inherits a) is defined in a different file
+  in tcp 234 a
+}
