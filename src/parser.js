@@ -44,14 +44,16 @@ export function parseStream(input, callback, options = {}) {
       .on('finish', () => {
         takeLocations()
         const { results } = parser
-        if (options.dumpAst || results.length > 1) {
-          process.stderr.write(require('util').inspect(results, { colors: true, depth: null }))
-          process.stderr.write('\n')
-        }
-        if (results.length == 1) {
-          resolve(callback(results[0]))
-        } else {
-          reject(Error(`Ambiguous parse: got ${results.length} results`))
+        if (results) {
+          if (options.dumpAst || results.length > 1) {
+            process.stderr.write(require('util').inspect(results, { colors: true, depth: null }))
+            process.stderr.write('\n')
+          }
+          if (results.length == 1) {
+            resolve(callback(results[0]))
+          } else {
+            reject(Error(`Ambiguous parse: got ${results.length} results`))
+          }
         }
       })
   })

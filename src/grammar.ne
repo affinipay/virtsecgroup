@@ -65,8 +65,8 @@ str_escape -> "\\" [^\n] {% d => JSON.parse('"\\' + d[1] + '"') %}
 str_list -> str
   | str _ "," _ str_list {% d => [d[0]].concat(d[4]) %}
 
-ws -> [\f\r\t\v\u00A0\u2028\u2029 ]:+ {% (d, l) => new ast.Whitespace(makeloc(l), d[0].join('')) %}
-newline -> "\n" {% (d, l) => { const n = new ast.Whitespace(makeloc(l), d[0]); newline(l); return n } %}
+ws -> [\f\r\t\v\u00A0\u2028\u2029 ] {% () => [] %}
+newline -> "\n" {% (d, l) => { newline(l); return [] } %}
 block_comment -> "/*" bc_char:* "*/" {% (d, l) => new ast.Comment(makeloc(l), d[1].join('')) %}
 bc_char => [^*] {% id %}
   | "*" [^/] {% d => d[0] + d[1] %}
@@ -79,5 +79,5 @@ skip -> ws {% id %}
 __ -> skip | skip __ {% d => [d[0]].concat(d[1]) %}
 # optional whitespace
 _ -> null {% () => [] %} | __ {% id %}
-semi -> ";" {% (d, l) => new ast.Semicolon(makeloc(l)) %}
+semi -> ";" {% () => [] %}
 sep -> (ws | block_comment):* (newline | line_comment | semi) (skip | semi):* {% d => d[0].concat(d[1], d[2]) %}

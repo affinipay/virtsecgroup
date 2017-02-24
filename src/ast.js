@@ -20,19 +20,6 @@ export class Comment extends Skipped {
   }
 }
 
-export class Whitespace extends Skipped {
-  constructor(location, chars) {
-    super(location)
-    this.chars = chars
-  }
-}
-
-export class Semicolon extends Skipped {
-  constructor(location) {
-    super(location)
-  }
-}
-
 export class IdRef extends Node {
   constructor(location, id) {
     super(location)
